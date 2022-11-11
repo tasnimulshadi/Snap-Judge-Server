@@ -17,6 +17,7 @@ const client = new MongoClient(uri);
 const run = async () => {
     try {
         const serviceCollection = client.db('snapJudgeDb').collection('services');
+        const reviewCollection = client.db('snapJudgeDb').collection('reviews');
 
         //services
         //get api multiple
@@ -34,6 +35,25 @@ const run = async () => {
             const query = { _id: ObjectId(id) };
             const data = await serviceCollection.findOne(query);
             res.send(data);
+        })
+
+        //addreview
+        //post
+        app.post('/addreview', async (req, res) => {
+            const reviewData = req.body;
+            const result = await reviewCollection.insertOne(reviewData);
+            res.send(result);
+        })
+
+        //get all review by service id
+        app.get('/reviews/:id', async (req, res) => {
+            const serviceId = req.params.id;
+
+            const query = { service: serviceId };
+
+            const cursor = reviewCollection.find(query);
+            const servicesData = await cursor.toArray();
+            res.send(servicesData);
         })
 
     }
