@@ -21,11 +21,21 @@ const run = async () => {
         //services
         //get api multiple
         app.get('/services', async (req, res) => {
+            const limit = parseInt(req.query.limit);
+
             const query = {};
             const cursor = serviceCollection.find(query);
-            const servicesData = await cursor.toArray();
+            const servicesData = await cursor.limit(limit).toArray();
             res.send(servicesData);
         })
+        //single service
+        app.get('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const data = await serviceCollection.findOne(query);
+            res.send(data);
+        })
+
     }
     finally {
         //
