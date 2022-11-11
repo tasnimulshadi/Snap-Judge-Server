@@ -46,10 +46,21 @@ const run = async () => {
         })
 
         //get all review by service id
-        app.get('/reviews/:id', async (req, res) => {
-            const serviceId = req.params.id;
+        app.get('/reviews/service/:id', async (req, res) => {
+            const id = req.params.id;
 
-            const query = { service: serviceId };
+            const query = { serviceId: id };
+
+            const cursor = reviewCollection.find(query);
+            const servicesData = await cursor.toArray();
+            res.send(servicesData);
+        })
+
+        //get all review by user id
+        app.get('/reviews/user/:id', async (req, res) => {
+            const uid = req.params.id;
+
+            const query = { userId: uid };
 
             const cursor = reviewCollection.find(query);
             const servicesData = await cursor.toArray();
