@@ -29,6 +29,7 @@ const run = async () => {
             res.send(result);
         })
 
+
         //get api multiple services
         app.get('/services', async (req, res) => {
             const limit = parseInt(req.query.limit);
@@ -45,6 +46,37 @@ const run = async () => {
             const data = await serviceCollection.findOne(query);
             res.send(data);
         })
+
+        //update service rating by service id
+        app.patch('/service/update/rating/:id', async (req, res) => {
+            const service_id = req.params.id;
+
+            const serviceQuery = { serviceId: service_id };
+            const serviceOptions = {
+                // Include only the `rating` fields in each returned document
+                projection: { _id: 0, rating: 1 },
+            };
+
+            // get all the reviews ratings
+            const cursor = reviewCollection.find(serviceQuery, serviceOptions);
+            const reviewsData = await cursor.toArray();
+
+            //average calculaton
+            const sum = reviewsData.reduce((previousValue, currentValue) => previousValue + currentValue.rating, 0);
+            const avg = Math.round(sum / reviewsData.length);
+
+            //update rating of service
+            const updateRatingFilter = { _id: ObjectId(service_id) };
+            const updateRatingDoc = {
+                $set: {
+                    rating: avg
+                },
+            };
+            const result = await serviceCollection.updateOne(updateRatingFilter, updateRatingDoc);
+
+            res.send(result);
+        })
+
 
         //addreview
         //post review
