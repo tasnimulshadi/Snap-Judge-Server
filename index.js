@@ -29,15 +29,19 @@ const run = async () => {
             res.send(result);
         })
 
-
-        //get api multiple services
+        //get api multiple services with limit
         app.get('/services', async (req, res) => {
+            const index = parseInt(req.query.index);
             const limit = parseInt(req.query.limit);
 
+            //count
+            const count = await serviceCollection.countDocuments();
+
+            //data
             const query = {};
             const cursor = serviceCollection.find(query);
-            const servicesData = await cursor.limit(limit).toArray();
-            res.send(servicesData);
+            const servicesData = await cursor.skip(index * limit).limit(limit).toArray();
+            res.send({ services: servicesData, count });
         })
         //single service
         app.get('/services/:id', async (req, res) => {
@@ -108,6 +112,14 @@ const run = async () => {
             res.send(data);
         })
 
+        //get single review by review id
+        app.get('/review/:id', async (req, res) => {
+            const reviewId = req.params.id;
+            const query = { _id: ObjectId(reviewId) };
+            const data = await reviewCollection.findOne(query);
+            res.send(data);
+        })
+
         //delete review api
         app.delete('/reviews/delete/:id', async (req, res) => {
             const id = req.params.id;
@@ -115,6 +127,21 @@ const run = async () => {
             const result = await reviewCollection.deleteOne(query);
             res.send(result);
         })
+
+        //update review api
+        app.patch('/review/update', async (req, res) => {
+            const { id, message, rating } = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    message,
+                    rating
+                }
+            };
+            const result = await reviewCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
 
         //blogs
         //get all blogs api
