@@ -16,11 +16,20 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri);
 const run = async () => {
     try {
-        const serviceCollection = client.db('snapJudgeDb').collection('services');
-        const reviewCollection = client.db('snapJudgeDb').collection('reviews');
+        const database = client.db('snapJudgeDb');
+        const serviceCollection = database.collection('services');
+        const reviewCollection = database.collection('reviews');
+        const blogCollection = database.collection('blogs');
 
         //services
-        //get api multiple
+        //post service
+        app.post('/service', async (req, res) => {
+            const reviewData = req.body;
+            const result = await serviceCollection.insertOne(reviewData);
+            res.send(result);
+        })
+
+        //get api multiple services
         app.get('/services', async (req, res) => {
             const limit = parseInt(req.query.limit);
 
@@ -38,7 +47,7 @@ const run = async () => {
         })
 
         //addreview
-        //post
+        //post review
         app.post('/addreview', async (req, res) => {
             const reviewData = req.body;
             const result = await reviewCollection.insertOne(reviewData);
@@ -52,8 +61,8 @@ const run = async () => {
             const query = { serviceId: id };
 
             const cursor = reviewCollection.find(query);
-            const servicesData = await cursor.toArray();
-            res.send(servicesData);
+            const data = await cursor.toArray();
+            res.send(data);
         })
 
         //get all review by user id
@@ -63,8 +72,8 @@ const run = async () => {
             const query = { userId: uid };
 
             const cursor = reviewCollection.find(query);
-            const servicesData = await cursor.toArray();
-            res.send(servicesData);
+            const data = await cursor.toArray();
+            res.send(data);
         })
 
         //delete review api
@@ -74,6 +83,16 @@ const run = async () => {
             const result = await reviewCollection.deleteOne(query);
             res.send(result);
         })
+
+        //blogs
+        //get all blogs api
+        app.get('/blogs', async (req, res) => {
+            const query = {};
+            const cursor = blogCollection.find(query);
+            const servicesData = await cursor.toArray();
+            res.send(servicesData);
+        })
+
 
     }
     finally {
