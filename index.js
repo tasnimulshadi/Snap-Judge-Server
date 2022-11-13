@@ -96,7 +96,9 @@ const run = async () => {
 
             const query = { serviceId: id };
 
-            const cursor = reviewCollection.find(query);
+            // find().sort({ _id: -1 });  ***(1 for asc and -1 for desc)***
+            const cursor = reviewCollection.find(query).sort({ _id: -1 });
+
             const data = await cursor.toArray();
             res.send(data);
         })
@@ -167,6 +169,13 @@ run().catch(error => console.error(error))
 
 app.get('/', (req, res) => {
     res.send('Hello From SnapJudge Server')
+})
+
+app.get('/button', (req, res) => {
+    // const date = ObjectId.getTimestamp()
+    console.log(date);
+
+    res.send({ msg: 'button from server' })
 })
 
 //run server
