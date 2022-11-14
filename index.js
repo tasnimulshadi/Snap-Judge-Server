@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
+
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -10,6 +11,7 @@ const port = process.env.PORT || 5000;
 //midleware
 app.use(cors());
 app.use(express.json());
+
 
 //mongoDb database
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bfrcfcb.mongodb.net/?retryWrites=true&w=majority`;
@@ -82,8 +84,9 @@ const run = async () => {
         })
 
 
-        //addreview
-        //post review
+        // Review
+        // Review
+        // post review
         app.post('/addreview', async (req, res) => {
             const reviewData = req.body;
             const result = await reviewCollection.insertOne(reviewData);
@@ -91,27 +94,47 @@ const run = async () => {
         })
 
         //get all review by service id
-        app.get('/reviews/service/:id', async (req, res) => {
-            const id = req.params.id;
+        app.get('/reviewsbyservice', async (req, res) => {
+            const index = parseInt(req.query.index);
+            const limit = parseInt(req.query.limit);
+            const sId = req.query.id;
 
-            const query = { serviceId: id };
+            //query
+            const query = { serviceId: sId };
 
+            //count of the number of reviews for the service id
+            const count = await reviewCollection.countDocuments(query);
+
+            //**sort the reviews in a descending order**
+            // MongoDB ObjectId contain a default creation timestamp
             // find().sort({ _id: -1 });  ***(1 for asc and -1 for desc)***
             const cursor = reviewCollection.find(query).sort({ _id: -1 });
 
-            const data = await cursor.toArray();
-            res.send(data);
+            // data with limit for pagination
+            const reviews = await cursor.skip(index * limit).limit(limit).toArray();
+            res.send({ reviews, count });
         })
 
         //get all review by user id
-        app.get('/reviews/user/:id', async (req, res) => {
-            const uid = req.params.id;
+        app.get('/reviewsbyuser', async (req, res) => {
+            const index = parseInt(req.query.index);
+            const limit = parseInt(req.query.limit);
+            const uid = req.query.id;
 
+            //query
             const query = { userId: uid };
 
-            const cursor = reviewCollection.find(query);
-            const data = await cursor.toArray();
-            res.send(data);
+            //count of the number of reviews for the user id
+            const count = await reviewCollection.countDocuments(query);
+
+            //**sort the reviews in a descending order**
+            // MongoDB ObjectId contain a default creation timestamp
+            // find().sort({ _id: -1 });  ***(1 for asc and -1 for desc)***
+            const cursor = reviewCollection.find(query).sort({ _id: -1 });
+
+            // data with limit for pagination
+            const reviews = await cursor.skip(index * limit).limit(limit).toArray();
+            res.send({ reviews, count });
         })
 
         //get single review by review id
@@ -163,19 +186,8 @@ const run = async () => {
 run().catch(error => console.error(error))
 
 
-
-
-
-
 app.get('/', (req, res) => {
     res.send('Hello From SnapJudge Server')
-})
-
-app.get('/button', (req, res) => {
-    // const date = ObjectId.getTimestamp()
-    console.log(date);
-
-    res.send({ msg: 'button from server' })
 })
 
 //run server
